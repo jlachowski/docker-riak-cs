@@ -39,17 +39,23 @@ echo
 
 for index in $(seq -f "%02g" "1" "${DOCKER_RIAK_CS_CLUSTER_SIZE}");
 do
-  if [ "${index}" -gt "1" ] ; then
-    docker run -e "DOCKER_RIAK_CS_CLUSTER_SIZE=${DOCKER_RIAK_CS_CLUSTER_SIZE}" \
-               -e "DOCKER_RIAK_CS_AUTOMATIC_CLUSTERING=${DOCKER_RIAK_CS_AUTOMATIC_CLUSTERING}" \
-               -P --name "riak-cs${index}" --link "riak-cs01:seed" \
-               -d hectcastro/riak-cs > /dev/null 2>&1
+  if [ -n "${DOCKER_RIAK_CS_LOCAL_STORAGE}" ] ; then
+    VOLUMES=" -v ${DOCKER_RIAK_CS_LOCAL_STORAGE}/riak${index}:/var/lib/riak -v ${DOCKER_RIAK_CS_LOCAL_STORAGE}/riak-cs${index}:/var/lib/riak-cs "
   else
-    docker run -e "DOCKER_RIAK_CS_CLUSTER_SIZE=${DOCKER_RIAK_CS_CLUSTER_SIZE}" \
-               -e "DOCKER_RIAK_CS_AUTOMATIC_CLUSTERING=${DOCKER_RIAK_CS_AUTOMATIC_CLUSTERING}" \
-               -P --name "riak-cs${index}" -d hectcastro/riak-cs > /dev/null 2>&1
+    VOLUMES=""     
   fi
-
+  if [ "${index}" -gt "1" ] ; then
+    LINKS=" --link riak-cs01:seed "
+  else
+    LINKS=""
+  fi
+  docker run -e "DOCKER_RIAK_CS_CLUSTER_SIZE=${DOCKER_RIAK_CS_CLUSTER_SIZE}" \
+             -e "DOCKER_RIAK_CS_AUTOMATIC_CLUSTERING=${DOCKER_RIAK_CS_AUTOMATIC_CLUSTERING}" \
+             -P --name "riak-cs${index}" \
+             "${LINKS}" \
+             "${VOLUMES}" \
+             -d hectcastro/riak-cs > /dev/null 2>&1
+             
   CONTAINER_ID=$(docker ps | egrep "riak-cs${index}[^/]" | cut -d" " -f1)
   CONTAINER_PORT=$(docker port "${CONTAINER_ID}" 8080 | cut -d ":" -f2)
 
