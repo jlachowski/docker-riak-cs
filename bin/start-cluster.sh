@@ -51,9 +51,10 @@ do
   fi
   docker run -e "DOCKER_RIAK_CS_CLUSTER_SIZE=${DOCKER_RIAK_CS_CLUSTER_SIZE}" \
              -e "DOCKER_RIAK_CS_AUTOMATIC_CLUSTERING=${DOCKER_RIAK_CS_AUTOMATIC_CLUSTERING}" \
-             -P --name "riak-cs${index}" \
+             --name "riak-cs${index}" \
              "${LINKS}" \
              "${VOLUMES}" \
+             -p 127.0.0.1::22 -p 127.0.0.1::8080 -p 127.0.0.1::8098 \
              -d hectcastro/riak-cs > /dev/null 2>&1
              
   CONTAINER_ID=$(docker ps | egrep "riak-cs${index}[^/]" | cut -d" " -f1)
