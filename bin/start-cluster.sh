@@ -76,7 +76,7 @@ if env | egrep -q "DOCKER_RIAK_CS_HAPROXY=1"; then
     RIAK_CS_CONTAINER_LINKS="${RIAK_CS_CONTAINER_LINKS}--link riak-cs${index}:riak-cs${index} "
   done
 
-  eval docker run -p 8080:8080 -p 8888:8888 \
+  eval docker run -p 127.0.0.1:8080:8080 -p 127.0.0.1:8888:8888 \
     "${RIAK_CS_CONTAINER_LINKS}"\
     --name "riak-cs-haproxy" -d hectcastro/riak-cs-haproxy > /dev/null 2>&1
 
